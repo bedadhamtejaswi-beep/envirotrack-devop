@@ -2,6 +2,13 @@ provider "aws" {
   region = var.aws_region
 }
 
+locals {
+  common_tags = {
+    Project = "envirotrack"
+    Managed = "terraform"
+  }
+}
+
 resource "aws_security_group" "envirotrack_sg" {
   name        = "envirotrack-sg"
   description = "Security group for EnviroTrack API host"
@@ -34,9 +41,9 @@ resource "aws_security_group" "envirotrack_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "envirotrack-sg"
-  }
+  })
 }
 
 resource "aws_instance" "envirotrack_host" {
@@ -45,7 +52,7 @@ resource "aws_instance" "envirotrack_host" {
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.envirotrack_sg.id]
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "envirotrack-host"
-  }
+  })
 }
