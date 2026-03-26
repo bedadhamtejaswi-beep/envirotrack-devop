@@ -16,7 +16,12 @@ envirotrack-devops/
 │   ├── requirements.txt
 │   └── test_main.py
 └── terraform/
-    └── main.tf
+    ├── main.tf
+    ├── network.tf
+    ├── outputs.tf
+    ├── terraform.tfvars.example
+    ├── variables.tf
+    └── versions.tf
 ```
 
 ## What This Project Demonstrates
@@ -73,8 +78,13 @@ docker run -p 8000:8000 envirotrack-api
 ```bash
 cd terraform
 terraform init
+terraform fmt -check
+terraform validate
 terraform plan
 ```
+
+To override defaults without editing the source files, copy `terraform/terraform.tfvars.example`
+to `terraform/terraform.tfvars` and adjust the values for your environment.
 
 ### Test Ansible
 
