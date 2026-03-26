@@ -25,16 +25,31 @@ variable "allowed_cidr" {
   type        = string
   description = "CIDR allowed to SSH to the host."
   default     = "0.0.0.0/0"
+
+  validation {
+    condition     = can(cidrhost(var.allowed_cidr, 0))
+    error_message = "allowed_cidr must be a valid IPv4 CIDR block."
+  }
 }
 
 variable "app_port" {
   type        = number
   description = "Port exposed by the EnviroTrack API."
   default     = 8000
+
+  validation {
+    condition     = var.app_port >= 1 && var.app_port <= 65535
+    error_message = "app_port must be between 1 and 65535."
+  }
 }
 
 variable "zabbix_agent_port" {
   type        = number
   description = "Port used by the Zabbix agent."
   default     = 10050
+
+  validation {
+    condition     = var.zabbix_agent_port >= 1 && var.zabbix_agent_port <= 65535
+    error_message = "zabbix_agent_port must be between 1 and 65535."
+  }
 }
