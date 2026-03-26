@@ -32,6 +32,28 @@ variable "allowed_cidr" {
   }
 }
 
+variable "app_allowed_cidr" {
+  type        = string
+  description = "CIDR allowed to reach the EnviroTrack API."
+  default     = "0.0.0.0/0"
+
+  validation {
+    condition     = can(cidrhost(var.app_allowed_cidr, 0))
+    error_message = "app_allowed_cidr must be a valid IPv4 CIDR block."
+  }
+}
+
+variable "zabbix_allowed_cidr" {
+  type        = string
+  description = "CIDR allowed to reach the Zabbix agent."
+  default     = "0.0.0.0/0"
+
+  validation {
+    condition     = can(cidrhost(var.zabbix_allowed_cidr, 0))
+    error_message = "zabbix_allowed_cidr must be a valid IPv4 CIDR block."
+  }
+}
+
 variable "app_port" {
   type        = number
   description = "Port exposed by the EnviroTrack API."

@@ -3,5 +3,7 @@ key_name          = "envirotrack-key"
 instance_type     = "t2.micro"
 ami_id            = "ami-0c101f26f147fa7fd"
 allowed_cidr      = "203.0.113.10/32"
+app_allowed_cidr  = "0.0.0.0/0"
+zabbix_allowed_cidr = "198.51.100.25/32"
 app_port          = 8000
 zabbix_agent_port = 10050
