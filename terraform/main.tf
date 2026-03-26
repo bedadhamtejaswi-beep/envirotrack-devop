@@ -51,6 +51,17 @@ resource "aws_instance" "envirotrack_host" {
   instance_type          = var.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.envirotrack_sg.id]
+  monitoring             = true
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
+
+  root_block_device {
+    volume_size = var.root_volume_size
+    volume_type = "gp3"
+  }
 
   tags = merge(local.common_tags, {
     Name = "envirotrack-host"

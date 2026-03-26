@@ -15,6 +15,17 @@ variable "instance_type" {
   default     = "t2.micro"
 }
 
+variable "root_volume_size" {
+  type        = number
+  description = "Root EBS volume size in GiB for the EnviroTrack host."
+  default     = 16
+
+  validation {
+    condition     = var.root_volume_size >= 8
+    error_message = "root_volume_size must be at least 8 GiB."
+  }
+}
+
 variable "ami_id" {
   type        = string
   description = "AMI used for the EnviroTrack host."
