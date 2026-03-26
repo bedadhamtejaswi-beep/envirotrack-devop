@@ -44,6 +44,8 @@ provision:
   script:
     - cd terraform
     - terraform init
+    - terraform fmt -check
+    - terraform validate
     - terraform plan -out=plan.tfplan
   environment:
     name: production
