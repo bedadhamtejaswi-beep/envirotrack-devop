@@ -1,6 +1,8 @@
 - name: Configure EnviroTrack application host
   hosts: all
   become: true
+  collections:
+    - community.docker
   vars:
     app_image: "{{ app_image | default('envirotrack-api:latest') }}"
     zabbix_server_ip: "{{ zabbix_server_ip | default('127.0.0.1') }}"
@@ -15,6 +17,7 @@
       apt:
         name:
           - docker.io
+          - python3-docker
           - python3-pip
           - curl
         state: present
@@ -42,15 +45,17 @@
         state: restarted
         enabled: true
 
-    - name: Remove previous app container if present
-      shell: docker rm -f envirotrack-api || true
-
     - name: Pull latest application image
-      shell: docker pull {{ app_image }}
+      community.docker.docker_image:
+        name: "{{ app_image }}"
+        source: pull
 
     - name: Run application container
-      shell: >
-        docker run -d --name envirotrack-api
-        -p 8000:8000
-        --restart unless-stopped
-        {{ app_image }}
+      community.docker.docker_container:
+        name: envirotrack-api
+        image: "{{ app_image }}"
+        pull: true
+        restart_policy: unless-stopped
+        published_ports:
+          - "8000:8000"
+        state: started
