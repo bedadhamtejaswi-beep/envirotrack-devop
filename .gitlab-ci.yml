@@ -1,0 +1,67 @@
+stages:
+  - lint
+  - test
+  - build
+  - provision
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  LATEST_TAG: $CI_REGISTRY_IMAGE:latest
+  AWS_DEFAULT_REGION: us-east-1
+
+lint:
+  stage: lint
+  image: python:3.11-slim
+  script:
+    - pip install flake8
+    - flake8 app/
+  allow_failure: true
+
+test:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install -r app/requirements.txt pytest httpx
+    - pytest app/test_main.py -v
+
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_TAG -t $LATEST_TAG app/
+    - docker push $IMAGE_TAG
+    - docker push $LATEST_TAG
+
+provision:
+  stage: provision
+  image: hashicorp/terraform:1.5
+  script:
+    - cd terraform
+    - terraform init
+    - terraform plan -out=plan.tfplan
+  environment:
+    name: production
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: willhallonline/ansible:2.15-ubuntu
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+  script:
+    - ansible-playbook -i "$DEPLOY_TARGET_IP," ansible/playbook.yml --extra-vars "app_image=$IMAGE_TAG zabbix_server_ip=$ZABBIX_SERVER_IP" -u ubuntu
+  only:
+    - main
+  dependencies:
+    - build
