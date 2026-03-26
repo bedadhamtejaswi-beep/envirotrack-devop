@@ -1,0 +1,56 @@
+- name: Configure EnviroTrack application host
+  hosts: all
+  become: true
+  vars:
+    app_image: "{{ app_image | default('envirotrack-api:latest') }}"
+    zabbix_server_ip: "{{ zabbix_server_ip | default('127.0.0.1') }}"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install base packages
+      apt:
+        name:
+          - docker.io
+          - python3-pip
+          - curl
+        state: present
+
+    - name: Ensure Docker is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Install Zabbix agent
+      apt:
+        name: zabbix-agent
+        state: present
+
+    - name: Configure Zabbix server address
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: "^Server="
+        line: "Server={{ zabbix_server_ip }}"
+
+    - name: Restart Zabbix agent
+      service:
+        name: zabbix-agent
+        state: restarted
+        enabled: true
+
+    - name: Remove previous app container if present
+      shell: docker rm -f envirotrack-api || true
+
+    - name: Pull latest application image
+      shell: docker pull {{ app_image }}
+
+    - name: Run application container
+      shell: >
+        docker run -d --name envirotrack-api
+        -p 8000:8000
+        --restart unless-stopped
+        {{ app_image }}
