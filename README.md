@@ -86,6 +86,13 @@ terraform plan
 To override defaults without editing the source files, copy `terraform/terraform.tfvars.example`
 to `terraform/terraform.tfvars` and adjust the values for your environment.
 
+The Terraform example variables now let you control:
+
+- SSH ingress with `allowed_cidr`
+- API ingress with `app_allowed_cidr`
+- Zabbix ingress with `zabbix_allowed_cidr`
+- EC2 root disk sizing with `root_volume_size`
+
 ### Test Ansible
 
 ```bash
